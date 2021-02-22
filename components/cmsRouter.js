@@ -7,6 +7,7 @@ import { getPathForStaticPage } from 'theme/helpers';
 import { formatCategoryLink, formatProductLink } from '@vue-storefront/core/modules/url/helpers';
 import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
+import { price } from '@vue-storefront/core/filters';
 
 export default {
   name: 'cmsRouter',
@@ -57,9 +58,13 @@ export default {
         });
       }
     },
+
     parseHTML (parseHTML) {
       let htmlDecodeContent = htmlDecode(parseHTML.content);
       let parseContent = parse(htmlDecodeContent);
+      parseContent.querySelectorAll('[type="text/x-magento-init"]').map(item => {
+        this.parsePrice(item.parentNode, JSON.parse(item.rawText));
+      });
       parseContent.querySelectorAll('a').map(item => {
         if (!item.getAttribute('href').startsWith('#')) {
           item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
@@ -75,6 +80,56 @@ export default {
         }
       });
       return unescapeContent;
+    },
+
+    parsePrice (wrap, json) {
+      let loop = (item, key, array = []) => {
+        if (Object.keys(item).map(i => String(i) === key).indexOf(true) === -1 && typeof item === 'object') {
+          Object.keys(item).map(i => {
+            loop(item[i], key, array);
+          });
+        } else {
+          if (item[key]) {
+            array.push(item[key]);
+          }
+        }
+        return array;
+      };
+      let bind = wrap.querySelector('span');
+      let template = '';
+      let oldPrice = loop(json, 'old-price');
+      if (oldPrice.length) {
+        let oldPriceConfig = oldPrice[0].config;
+        template += '<span class="old-price">\n' +
+          '    <span class="price-container price-final_price tax weee">\n' +
+          '        <span class="price-label">' + i18n.t(oldPriceConfig.label) + '</span>\n' +
+          '        <span class="price-wrapper" id="' + oldPriceConfig.id + '" data-price-type="' + oldPriceConfig.priceType + '" data-price-amount="' + oldPriceConfig.priceAmount + '">' +
+          '            <span class="price"">' + price(oldPriceConfig.value) + '</span>' +
+          '        </span>\n' +
+          '    </span>\n' +
+          '</span>';
+      }
+      let specialPrice = loop(json, 'special-price');
+      if (specialPrice.length) {
+        let specialPriceConfig = specialPrice[0].config;
+        template += '<span class="special-price">\n' +
+          '    <span class="price-container price-final_price tax weee">\n' +
+          '        <span class="price-label">' + i18n.t(specialPriceConfig.label) + '</span>\n' +
+          '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
+          '            <span class="price"">' + price(specialPriceConfig.value) + '</span>' +
+          '        </span>\n' +
+          '    </span>\n' +
+          '</span>';
+      }
+      if (specialPrice.length && oldPrice.length) {
+        let percent = Math.round(100 - ((100 / oldPrice[0].config.value) * specialPrice[0].config.value));
+        let percentTemp = '<span class="percent" data-price-type="percent">\n' +
+          '        <span> -' + percent + '%</span>\n' +
+          '    </span>';
+        bind.set_content(percentTemp + template);
+      } else {
+        bind.set_content(template);
+      }
     },
 
     parseUrl (url) {
