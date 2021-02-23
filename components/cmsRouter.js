@@ -4,10 +4,11 @@ import { parse } from 'node-html-parser';
 import i18n from '@vue-storefront/i18n';
 import { unescape } from 'html-escaper';
 import { getPathForStaticPage } from 'theme/helpers';
-import { formatCategoryLink, formatProductLink } from '@vue-storefront/core/modules/url/helpers';
-import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
+import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
+import { localizedRoute } from '@vue-storefront/core/lib/multistore';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
 import { price } from '@vue-storefront/core/filters';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'cmsRouter',
@@ -17,11 +18,18 @@ export default {
   },
   mounted () {
     this.updateData(this.$refs.blocks);
+    this.getPagesCollection = this.getCmsPages;
   },
   data () {
     return {
-      collections: []
+      getPagesCollection: []
     };
+  },
+  computed: {
+    ...mapGetters({
+      getCategories: 'category/getCategories',
+      getCmsPages: 'homepage/getCmsPages'
+    })
   },
   methods: {
     updateData (refs) {
@@ -155,8 +163,9 @@ export default {
             let tailUrl = newUrl.substring(from, to);
             newUrl = newUrl.replace(tailUrl, '');
           }
-          newUrl = newUrl.endsWith('/') ? newUrl.substring(0, newUrl.length - 1) : newUrl;
         }
+        newUrl = newUrl.endsWith('/') ? newUrl.substring(0, newUrl.length - 1) : newUrl;
+        newUrl = newUrl.startsWith('/') ? newUrl.slice(1) : newUrl;
         let y = 0;
         while (y < reassignedRouter.length) {
           if (reassignedRouter[y].assigned === newUrl) {
@@ -166,8 +175,17 @@ export default {
           }
           y = y + 1;
         }
-        if (!checkType) {
-          // this.collections.push(newUrl);
+      }
+      if (!checkType) {
+        let cat = this.getCategories.find(cat => cat.url_path.indexOf(newUrl) !== -1);
+        if (cat) {
+          newUrl = formatCategoryLink(cat);
+        } else {
+          let page = this.getPagesCollection.find(pag => pag.identifier.indexOf(newUrl) !== -1);
+          if (page) {
+            let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
+            newUrl = getPathForStaticPage(pageUrl);
+          }
         }
       }
 
