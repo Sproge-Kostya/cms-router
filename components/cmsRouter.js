@@ -12,12 +12,7 @@ import { mapGetters } from 'vuex';
 
 export default {
   name: 'cmsRouter',
-  updated () {
-    this.imagePath();
-    this.updateData(this.$refs.blocks);
-  },
   mounted () {
-    this.updateData(this.$refs.blocks);
     this.getPagesCollection = this.getCmsPages;
   },
   data () {
@@ -32,43 +27,8 @@ export default {
     })
   },
   methods: {
-    updateData (refs) {
-      let $ = window.$;
-      if (!$(refs).find('.main-slider').hasClass('slick-initialized')) {
-        $(refs).find('.main-slider').slick({
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          arrows: true,
-          fade: true,
-          infinite: true
-        });
-        this.mobileStyles($(refs).find('[data-content-type="slide"]'));
-      }
-      if (!$(refs).find('.tabs-content').hasClass('slick-initialized')) {
-        $(refs).find('.tabs-content').slick({
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          arrows: false,
-          fade: true,
-          infinite: true,
-          asNavFor: $(refs).find('.tabs-navigation')
-        });
-      }
-      if (!$(refs).find('.tabs-navigation').hasClass('slick-initialized')) {
-        $(refs).find('.tabs-navigation').slick({
-          slidesToShow: $(refs).children().data('slideVisibleMobile') || 1,
-          asNavFor: $(refs).find('.tabs-content'),
-          dots: $(refs).children().data('showDots') || false,
-          arrows: false,
-          infinite: true,
-          focusOnSelect: true,
-          variableWidth: true
-        });
-      }
-    },
-
     parseHTML (parseHTML) {
-      let htmlDecodeContent = htmlDecode(parseHTML.content);
+      let htmlDecodeContent = htmlDecode(parseHTML);
       let parseContent = parse(htmlDecodeContent);
       parseContent.querySelectorAll('[type="text/x-magento-init"]').map(item => {
         this.parsePrice(item.parentNode, JSON.parse(item.rawText));
@@ -190,16 +150,6 @@ export default {
       }
 
       return localizedRoute(newUrl);
-    },
-
-    imagePath () {
-      const image = document.getElementsByClassName('pagebuilder-banner-wrapper');
-
-      for (let i = 0; i < image.length; i++) {
-        const newAttr = image[i].getAttribute('data-background-images').replace(/\\/g, '');
-        const path = JSON.parse(newAttr).mobile_image;
-        image[i].style.backgroundImage = 'url(' + path + ')';
-      }
     },
 
     uniqid (a = '', b = false) {
