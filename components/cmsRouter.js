@@ -137,9 +137,12 @@ export default {
         }
       }
       if (!checkType) {
+        let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
+        newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
         let cat = this.getCategories.find(cat => cat.url_path.indexOf(newUrl) !== -1);
         if (cat) {
           newUrl = formatCategoryLink(cat);
+          newUrl = newUrl + params;
         } else {
           let page = this.getPagesCollection.find(pag => pag.identifier.indexOf(newUrl) !== -1);
           if (page) {
