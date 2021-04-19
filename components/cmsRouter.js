@@ -11,7 +11,6 @@ import { price } from '@vue-storefront/core/filters';
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'cmsRouter',
   mounted () {
     this.getPagesCollection = this.getCmsPages;
   },
