@@ -38,7 +38,15 @@ export default {
         }
       });
       let unescapeContent = unescape(parseContent);
-      parseContent.structuredText.split(/(?=[A-Z])/).join('\n').split('\n').map(item => {
+      parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
+        if (selector.structuredText) {
+          if (i18n.messages[i18n.locale][selector.structuredText.trim()]) {
+            let regex = new RegExp(selector.structuredText.trim(), 'g');
+            unescapeContent = unescapeContent.replace(regex, i18n.t(selector.structuredText.trim()));
+          }
+        }
+      });
+      parseContent.structuredText.split('\n').map(item => {
         if (item) {
           if (i18n.messages[i18n.locale][item.trim()]) {
             let regex = new RegExp(item.trim(), 'g');
