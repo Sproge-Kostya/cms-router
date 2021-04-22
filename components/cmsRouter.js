@@ -37,7 +37,16 @@ export default {
           item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
         }
       });
+      parseContent.querySelectorAll('form [type=submit]').map(item => {
+        item.setAttribute('class', 'sf-button sf-button--full-width form__action-button--secondary');
+      });
       let unescapeContent = unescape(parseContent);
+      parseContent.querySelectorAll('form').map(form => {
+        if (form.rawAttrs) {
+          let regex = new RegExp(form.rawAttrs, 'g');
+          unescapeContent = unescapeContent.replace(regex, '');
+        }
+      });
       parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
         if (selector.structuredText) {
           if (i18n.messages[i18n.locale][selector.structuredText.trim()]) {
