@@ -40,6 +40,30 @@ export default {
       parseContent.querySelectorAll('form [type=submit]').map(item => {
         item.setAttribute('class', 'sf-button sf-button--full-width form__action-button--secondary');
       });
+      parseContent.querySelectorAll('.pagebuilder-banner-wrapper').map(item => {
+        if (item.rawAttrs) {
+          let regex = new RegExp('(\\w+)=(?:"([^"]*)"|(\\S*))', 'g');
+          let replaceAttrs = item.rawAttrs.replace(new RegExp(/\\/, 'g'), '').replace(new RegExp('"', 'g'), '\'').replace(new RegExp('=\'', 'g'), '="').replace(new RegExp('\' ', 'g'), '" ').replace(/(\s+)?.$/, '"');
+          let obj = {};
+          let m;
+          while ((m = regex.exec(replaceAttrs)) !== null) {
+            if (m[2]) {
+              obj[m[1]] = m[2];
+            } else {
+              obj[m[1]] = m[3];
+            }
+          }
+          if (obj.images) {
+            item.setAttribute('data-background-images', String(obj.images));
+          }
+
+          let jsonAttr = String(obj.images).replace(new RegExp("'", 'g'), '"');
+          const attr = ['mobile_image', 'desktop_image'];
+          attr.map(key => {
+            this.attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
+          });
+        }
+      });
       let unescapeContent = unescape(parseContent);
       parseContent.querySelectorAll('form').map(form => {
         if (form.rawAttrs) {
@@ -186,6 +210,24 @@ export default {
         e += f;
       }
       return a + d + e;
+    },
+
+    attrBackgroundImages (element, className, value, breakpoint = '768px') {
+      if (value) {
+        let classUniqId = this.uniqid(`${className}-`);
+        let styleNode = '';
+        element.setAttribute('class', element.getAttribute('class') + ` ${classUniqId}`);
+        switch (className) {
+          case 'mobile_image':
+            styleNode = '<style type="text/css"> @media only screen and (max-width: ' + breakpoint + ') { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+            break;
+          case 'desktop_image':
+            styleNode = '<style type="text/css">@media only screen and (min-width: (' + breakpoint + ' + 1)) { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+            break;
+          default:
+        }
+        element.set_content(styleNode);
+      }
     },
 
     mobileStyles (element, breakpoint = '768px') {
