@@ -164,6 +164,19 @@ export default {
             newUrl = newUrl.replace(tailUrl, '');
           }
         }
+        if (newUrl.indexOf('ru/') !== -1) {
+          let from = newUrl.search('ru/');
+          let to = newUrl.length;
+          let tailUrl = newUrl.substring(from, to);
+          newUrl = newUrl.replace(tailUrl, '');
+        }
+        if (newUrl.indexOf('ua/') !== -1) {
+          let from = newUrl.search('ua/');
+          let to = newUrl.length;
+          let tailUrl = newUrl.substring(from, to);
+          newUrl = newUrl.replace(tailUrl, '');
+        }
+
         newUrl = newUrl.endsWith('/') ? newUrl.substring(0, newUrl.length - 1) : newUrl;
         newUrl = newUrl.startsWith('/') ? newUrl.slice(1) : newUrl;
         let y = 0;
@@ -192,7 +205,7 @@ export default {
         }
       }
 
-      return localizedRoute(newUrl);
+      return newUrl;
     },
 
     uniqid (a = '', b = false) {
