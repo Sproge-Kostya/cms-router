@@ -37,6 +37,9 @@ export default {
           item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
         }
       });
+      parseContent.querySelectorAll('picture img').map(item => {
+        item.setAttribute('loading', 'lazy');
+      });
       parseContent.querySelectorAll('form [type=submit]').map(item => {
         item.setAttribute('class', 'sf-button sf-button--full-width form__action-button--secondary');
       });
@@ -73,7 +76,7 @@ export default {
       });
       parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
         if (selector.structuredText) {
-          if (i18n.messages[i18n.locale][selector.structuredText.trim()]) {
+          if (this.checkI18N(selector.structuredText.trim(), true)) {
             let regex = new RegExp(selector.structuredText.trim(), 'g');
             unescapeContent = unescapeContent.replace(regex, i18n.t(selector.structuredText.trim()));
           }
@@ -81,13 +84,20 @@ export default {
       });
       parseContent.structuredText.split('\n').map(item => {
         if (item) {
-          if (i18n.messages[i18n.locale][item.trim()]) {
+          if (this.checkI18N(item.trim(), true)) {
             let regex = new RegExp(item.trim(), 'g');
             unescapeContent = unescapeContent.replace(regex, i18n.t(item.trim()));
           }
         }
       });
       return unescapeContent;
+    },
+
+    checkI18N (string, status = false) {
+      if (status) {
+        return i18n.messages[i18n.locale][string.trim()];
+      }
+      return i18n.messages[i18n.locale][string.trim()] ? i18n.t(String(string.trim())) : string;
     },
 
     parsePrice (wrap, json) {
@@ -110,7 +120,7 @@ export default {
         let oldPriceConfig = oldPrice[0].config;
         template += '<span class="old-price">\n' +
           '    <span class="price-container price-final_price tax weee">\n' +
-          '        <span class="price-label">' + i18n.t(oldPriceConfig.label) + '</span>\n' +
+          '        <span class="price-label">' + this.checkI18N(oldPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + oldPriceConfig.id + '" data-price-type="' + oldPriceConfig.priceType + '" data-price-amount="' + oldPriceConfig.priceAmount + '">' +
           '            <span class="price"">' + price(oldPriceConfig.value) + '</span>' +
           '        </span>\n' +
@@ -122,7 +132,7 @@ export default {
         let specialPriceConfig = specialPrice[0].config;
         template += '<span class="special-price">\n' +
           '    <span class="price-container price-final_price tax weee">\n' +
-          '        <span class="price-label">' + i18n.t(specialPriceConfig.label) + '</span>\n' +
+          '        <span class="price-label">' + this.checkI18N(specialPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
           '            <span class="price"">' + price(specialPriceConfig.value) + '</span>' +
           '        </span>\n' +
