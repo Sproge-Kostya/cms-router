@@ -5,7 +5,6 @@ import i18n from '@vue-storefront/i18n';
 import { unescape } from 'html-escaper';
 import { getPathForStaticPage } from 'theme/helpers';
 import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
-import { localizedRoute } from '@vue-storefront/core/lib/multistore';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
 import { price } from '@vue-storefront/core/filters';
 import { mapGetters } from 'vuex';
@@ -39,6 +38,10 @@ export default {
       });
       parseContent.querySelectorAll('picture img').map(item => {
         item.setAttribute('loading', 'lazy');
+        const alt = item.getAttribute('alt');
+        if (!alt) {
+          item.setAttribute('alt', config.seo.defaultTitle);
+        }
       });
       parseContent.querySelectorAll('form [type=submit]').map(item => {
         item.setAttribute('class', 'sf-button sf-button--full-width form__action-button--secondary');
