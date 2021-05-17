@@ -36,8 +36,15 @@ export default {
           item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
         }
       });
+      parseContent.querySelectorAll('picture source').map(item => {
+        item.setAttribute('class', item.getAttribute('class') + ' lazyload');
+      });
       parseContent.querySelectorAll('picture img').map(item => {
+        const src = item.getAttribute('src');
+        item.setAttribute('data-src', src);
+        item.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
         item.setAttribute('loading', 'lazy');
+        item.setAttribute('class', item.getAttribute('class') + ' lazyload');
         const alt = item.getAttribute('alt');
         if (!alt) {
           item.setAttribute('alt', config.seo.defaultTitle);
