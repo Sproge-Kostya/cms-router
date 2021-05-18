@@ -44,6 +44,30 @@ export default {
       parseContent.querySelectorAll('img').map(item => {
         const src = item.getAttribute('src');
         item.setAttribute('data-src', src);
+        // let uri = src.split('?');
+        // let params = {};
+        // if (uri.length === 2) {
+        //   let vars = uri[1].split('&');
+        //   let tmp = '';
+        //   params = vars.reduce((accum, v) => {
+        //     tmp = v.split('=');
+        //     if (tmp.length === 2) {
+        //       params[tmp[0]] = tmp[1];
+        //     }
+        //     return params;
+        //   }, {});
+        //
+        //   if (params.width) {
+        //     item.setAttribute('width', params.width);
+        //   }
+        //   if (params.height) {
+        //     item.setAttribute('height', params.height);
+        //   }
+        //   if (!params.width && !params.height) {
+        //     item.setAttribute('data-sizes', 'auto');
+        //   }
+        // }
+        item.setAttribute('data-sizes', 'auto');
         item.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
         item.setAttribute('loading', 'lazy');
         const classList = item.getAttribute('class');
