@@ -167,42 +167,22 @@ export default {
     parseUrl (url) {
       let newUrl = url;
       let checkType = false;
+      const adminPath = 'admin'; // in case admin path has changed - edit this constant
 
       if (url.indexOf(config.images.baseUrlCatalog) !== -1) {
-        newUrl = url.replace(config.images.baseUrlCatalog, '');
+        const rules = [
+          // match catalog base url or admin url
+          config.images.baseUrlCatalog,
+          // match /index or /key to the EOL if it's admin url
+          `(?<=/)${adminPath}|(?<=/${adminPath}.*)(/index.*$|/key.*$)`,
+          // match locale paths
+          '(?<=/)ru/|(?<=/)ua/'
+        ];
 
-        if (newUrl.indexOf('/admin') !== -1) {
-          newUrl = newUrl.replace('/admin', '');
+        newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
+        // remove slashes from start and end
+        newUrl = newUrl.replace(/(^\/|\/$)/g, '');
 
-          if (newUrl.indexOf('/index') !== -1) {
-            let from = newUrl.search('index');
-            let to = newUrl.length;
-            let tailUrl = newUrl.substring(from, to);
-            newUrl = newUrl.replace(tailUrl, '');
-          }
-
-          if (newUrl.indexOf('/key') !== -1) {
-            let from = newUrl.search('key');
-            let to = newUrl.length;
-            let tailUrl = newUrl.substring(from, to);
-            newUrl = newUrl.replace(tailUrl, '');
-          }
-        }
-        if (newUrl.indexOf('ru/') !== -1) {
-          let from = newUrl.search('ru/');
-          let to = newUrl.length;
-          let tailUrl = newUrl.substring(from, to);
-          newUrl = newUrl.replace(tailUrl, '');
-        }
-        if (newUrl.indexOf('ua/') !== -1) {
-          let from = newUrl.search('ua/');
-          let to = newUrl.length;
-          let tailUrl = newUrl.substring(from, to);
-          newUrl = newUrl.replace(tailUrl, '');
-        }
-
-        newUrl = newUrl.endsWith('/') ? newUrl.substring(0, newUrl.length - 1) : newUrl;
-        newUrl = newUrl.startsWith('/') ? newUrl.slice(1) : newUrl;
         let y = 0;
         while (y < reassignedRouter.length) {
           if (reassignedRouter[y].assigned === newUrl) {
