@@ -136,7 +136,7 @@ export default {
           '    <span class="price-container price-final_price tax weee">\n' +
           '        <span class="price-label">' + this.checkI18N(oldPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + oldPriceConfig.id + '" data-price-type="' + oldPriceConfig.priceType + '" data-price-amount="' + oldPriceConfig.priceAmount + '">' +
-          '            <span class="price"">' + price(oldPriceConfig.value) + '</span>' +
+          '            <span class="price">' + price(oldPriceConfig.value) + '</span>' +
           '        </span>\n' +
           '    </span>\n' +
           '</span>';
@@ -148,7 +148,7 @@ export default {
           '    <span class="price-container price-final_price tax weee">\n' +
           '        <span class="price-label">' + this.checkI18N(specialPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
-          '            <span class="price"">' + price(specialPriceConfig.value) + '</span>' +
+          '            <span class="price">' + price(specialPriceConfig.value) + '</span>' +
           '        </span>\n' +
           '    </span>\n' +
           '</span>';
