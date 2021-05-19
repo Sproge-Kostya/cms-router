@@ -1,5 +1,3 @@
-let reassignedRouter = [
-  { name: 'tracking', reassigned: 'tracker', assigned: 'otsledit-zakaz' }
-];
+let reassignedRouter = [];
 
 export default reassignedRouter;

@@ -181,7 +181,7 @@ export default {
 
         newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
         // remove slashes from start and end
-        newUrl = newUrl.replace(/(^\/|\/$)/g, '');
+        newUrl = newUrl.replace(/(^\/+|\/+$)/g, '');
 
         let y = 0;
         while (y < reassignedRouter.length) {
@@ -194,17 +194,17 @@ export default {
         }
       }
       if (!checkType) {
-        let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
-        newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
-        let cat = this.getCategories.find(cat => cat.url_path.indexOf(newUrl) !== -1);
-        if (cat) {
-          newUrl = formatCategoryLink(cat);
-          newUrl = newUrl + params;
+        let page = this.getPagesCollection.find(pag => pag.identifier.indexOf(newUrl) !== -1);
+        if (page) {
+          let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
+          newUrl = getPathForStaticPage(pageUrl);
         } else {
-          let page = this.getPagesCollection.find(pag => pag.identifier.indexOf(newUrl) !== -1);
-          if (page) {
-            let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
-            newUrl = getPathForStaticPage(pageUrl);
+          let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
+          newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
+          let cat = this.getCategories.find(cat => cat.url_path.indexOf(newUrl) !== -1);
+          if (cat) {
+            newUrl = formatCategoryLink(cat);
+            newUrl = newUrl + params;
           }
         }
       }
