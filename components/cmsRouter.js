@@ -179,7 +179,7 @@ export default {
 
         // match /index or /key till the EOL if it's admin url
         if (newUrl.includes(`/${adminPath}/`)) {
-          rules.push(`/${adminPath}|(/index.*$|/key.*$)`)
+          rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`)
         }
 
         newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
