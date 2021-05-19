@@ -172,12 +172,15 @@ export default {
       if (url.indexOf(config.images.baseUrlCatalog) !== -1) {
         const rules = [
           // match catalog base url or admin url
-          config.images.baseUrlCatalog,
-          // match /index or /key to the EOL if it's admin url
-          `(?<=/)${adminPath}|(?<=/${adminPath}.*)(/index.*$|/key.*$)`,
+          config.images.baseUrlCatalog.replace(/(\/$|$)/, '(?=/)'),
           // match locale paths
-          '(?<=/)ru/|(?<=/)ua/'
+          '/ru/|/ua/'
         ];
+
+        // match /index or /key till the EOL if it's admin url
+        if (newUrl.includes(`/${adminPath}/`)) {
+          rules.push(`/${adminPath}|(/index.*$|/key.*$)`)
+        }
 
         newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
         // remove slashes from start and end
