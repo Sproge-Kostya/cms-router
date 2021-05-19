@@ -38,14 +38,14 @@ export default {
       });
       parseContent.querySelectorAll('picture source').map(item => {
         const srcset = item.getAttribute('srcset');
-        item.setAttribute('srcset', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
+        item.setAttribute('srcset', config.images.dotBase64);
         item.setAttribute('data-srcset', srcset);
       });
       parseContent.querySelectorAll('img').map(item => {
         const src = item.getAttribute('src');
         item.setAttribute('data-src', src);
         item.setAttribute('data-sizes', 'auto');
-        item.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
+        item.setAttribute('src', config.images.dotBase64);
         item.setAttribute('loading', 'lazy');
         const classList = item.getAttribute('class');
         item.setAttribute('class', classList ? classList + ' lazyload' : ' lazyload');
