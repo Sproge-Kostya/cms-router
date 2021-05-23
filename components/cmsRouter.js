@@ -35,6 +35,10 @@ export default {
         if (!item.getAttribute('href').startsWith('#')) {
           item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
         }
+        // add rel='noopener'
+        if (/(http[s]?:\/\/)/.test(item.getAttribute('href'))) {
+          item.setAttribute('rel', 'noopener');
+        }
       });
       parseContent.querySelectorAll('picture source').map(item => {
         const srcset = item.getAttribute('srcset');
