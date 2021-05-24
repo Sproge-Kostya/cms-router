@@ -43,11 +43,11 @@ export default {
       parseContent.querySelectorAll('picture source').map(item => {
         const srcset = item.getAttribute('srcset');
         item.setAttribute('srcset', config.images.dotBase64);
-        item.setAttribute('data-srcset', srcset);
+        item.setAttribute('data-srcset', this.passPicturesThroughApiAndResize(srcset));
       });
       parseContent.querySelectorAll('img').map(item => {
-        const src = item.getAttribute('src');
-        item.setAttribute('data-src', src);
+        let src = item.getAttribute('src');
+        item.setAttribute('data-src', this.passPicturesThroughApiAndResize(src));
         item.setAttribute('data-sizes', 'auto');
         item.setAttribute('src', config.images.dotBase64);
         item.setAttribute('loading', 'lazy');
@@ -109,6 +109,37 @@ export default {
         }
       });
       return unescapeContent;
+    },
+
+    passPicturesThroughApiAndResize (url) {
+      const uriArray = url.split('?') || [];
+      let params = {};
+      if (new RegExp(config.images.baseMediaUrl, 'g').test(url)) {
+        if (uriArray.length === 2) {
+          let vars = uriArray[1].split('&');
+          let tmp = '';
+          params = vars.reduce((accum, v) => {
+            tmp = v.split('=');
+            if (tmp.length === 2) {
+              params[tmp[0]] = tmp[1];
+            }
+            return params;
+          }, {});
+          if (params) {
+            if (params.width && params.height) {
+              url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
+              url = `${config.images.baseUrl}${params.width}/${params.height}/resize${url}`;
+            }
+          }
+        } else if (this.$screen && this.$screen.width) {
+          url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
+          url = `${config.images.baseUrl}${this.$screen.width}/${this.$screen.width}/resize${url}`;
+        } else {
+          url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
+          url = `${config.images.baseUrl}768/768/resize${url}`;
+        }
+      }
+      return url;
     },
 
     checkI18N (string, status = false) {
@@ -183,7 +214,7 @@ export default {
 
         // match /index or /key till the EOL if it's admin url
         if (newUrl.includes(`/${adminPath}/`)) {
-          rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`)
+          rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`);
         }
 
         newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
