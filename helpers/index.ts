@@ -121,7 +121,7 @@ export function passPicturesThroughApiAndResize (url, screen) {
       }
     } else if (screen && screen.width) {
       url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
-      url = `${config.images.baseUrl}${this.$screen.width}/${this.$screen.width}/resize${url}`;
+      url = `${config.images.baseUrl}${screen.width}/${screen.width}/resize${url}`;
     } else {
       url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
       url = `${config.images.baseUrl}768/768/resize${url}`;
