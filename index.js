@@ -1,29 +1,13 @@
 import config from 'config';
-import reassignedRouter from '../reassigned-router';
 import { parse } from 'node-html-parser';
 import i18n from '@vue-storefront/i18n';
 import { unescape } from 'html-escaper';
-import { getPathForStaticPage } from 'theme/helpers';
-import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
 import { price } from '@vue-storefront/core/filters';
-import { mapGetters } from 'vuex';
+import { checkI18N, mobileStyles, parseUrl, passPicturesThroughApiAndResize } from './helpers';
+import { localizedRoute } from '@vue-storefront/core/lib/multistore';
 
-export default {
-  mounted () {
-    this.getPagesCollection = this.getCmsPages;
-  },
-  data () {
-    return {
-      getPagesCollection: []
-    };
-  },
-  computed: {
-    ...mapGetters({
-      getCategories: 'category/getCategories',
-      getCmsPages: 'homepage/getCmsPages'
-    })
-  },
+export const CmsRouter = {
   methods: {
     parseHTML (parseHTML) {
       let htmlDecodeContent = htmlDecode(parseHTML);
@@ -33,7 +17,7 @@ export default {
       });
       parseContent.querySelectorAll('a').map(item => {
         if (!item.getAttribute('href').startsWith('#')) {
-          item.setAttribute('href', this.parseUrl(item.getAttribute('href')));
+          item.setAttribute('href', localizedRoute(parseUrl(item.getAttribute('href'))));
         }
         // add rel='noopener'
         if (/(http[s]?:\/\/)/.test(item.getAttribute('href'))) {
@@ -43,11 +27,11 @@ export default {
       parseContent.querySelectorAll('picture source').map(item => {
         const srcset = item.getAttribute('srcset');
         item.setAttribute('srcset', config.images.dotBase64);
-        item.setAttribute('data-srcset', this.passPicturesThroughApiAndResize(srcset));
+        item.setAttribute('data-srcset', passPicturesThroughApiAndResize(srcset));
       });
       parseContent.querySelectorAll('img').map(item => {
         let src = item.getAttribute('src');
-        item.setAttribute('data-src', this.passPicturesThroughApiAndResize(src));
+        item.setAttribute('data-src', passPicturesThroughApiAndResize(src));
         item.setAttribute('data-sizes', 'auto');
         item.setAttribute('src', config.images.dotBase64);
         item.setAttribute('loading', 'lazy');
@@ -94,7 +78,7 @@ export default {
       });
       parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
         if (selector.structuredText) {
-          if (this.checkI18N(selector.structuredText.trim(), true)) {
+          if (checkI18N(selector.structuredText.trim(), true)) {
             let regex = new RegExp(selector.structuredText.trim(), 'g');
             unescapeContent = unescapeContent.replace(regex, i18n.t(selector.structuredText.trim()));
           }
@@ -102,51 +86,13 @@ export default {
       });
       parseContent.structuredText.split('\n').map(item => {
         if (item) {
-          if (this.checkI18N(item.trim(), true)) {
+          if (checkI18N(item.trim(), true)) {
             let regex = new RegExp(item.trim(), 'g');
             unescapeContent = unescapeContent.replace(regex, i18n.t(item.trim()));
           }
         }
       });
       return unescapeContent;
-    },
-
-    passPicturesThroughApiAndResize (url) {
-      const uriArray = url.split('?') || [];
-      let params = {};
-      if (new RegExp(config.images.baseMediaUrl, 'g').test(url)) {
-        if (uriArray.length === 2) {
-          let vars = uriArray[1].split('&');
-          let tmp = '';
-          params = vars.reduce((accum, v) => {
-            tmp = v.split('=');
-            if (tmp.length === 2) {
-              params[tmp[0]] = tmp[1];
-            }
-            return params;
-          }, {});
-          if (params) {
-            if (params.width && params.height) {
-              url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
-              url = `${config.images.baseUrl}${params.width}/${params.height}/resize${url}`;
-            }
-          }
-        } else if (this.$screen && this.$screen.width) {
-          url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
-          url = `${config.images.baseUrl}${this.$screen.width}/${this.$screen.width}/resize${url}`;
-        } else {
-          url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
-          url = `${config.images.baseUrl}768/768/resize${url}`;
-        }
-      }
-      return url;
-    },
-
-    checkI18N (string, status = false) {
-      if (status) {
-        return i18n.messages[i18n.locale][string.trim()];
-      }
-      return i18n.messages[i18n.locale][string.trim()] ? i18n.t(String(string.trim())) : string;
     },
 
     parsePrice (wrap, json) {
@@ -169,7 +115,7 @@ export default {
         let oldPriceConfig = oldPrice[0].config;
         template += '<span class="old-price">\n' +
           '    <span class="price-container price-final_price tax weee">\n' +
-          '        <span class="price-label">' + this.checkI18N(oldPriceConfig.label) + '</span>\n' +
+          '        <span class="price-label">' + checkI18N(oldPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + oldPriceConfig.id + '" data-price-type="' + oldPriceConfig.priceType + '" data-price-amount="' + oldPriceConfig.priceAmount + '">' +
           '            <span class="price">' + price(oldPriceConfig.value) + '</span>' +
           '        </span>\n' +
@@ -181,7 +127,7 @@ export default {
         let specialPriceConfig = specialPrice[0].config;
         template += '<span class="special-price">\n' +
           '    <span class="price-container price-final_price tax weee">\n' +
-          '        <span class="price-label">' + this.checkI18N(specialPriceConfig.label) + '</span>\n' +
+          '        <span class="price-label">' + checkI18N(specialPriceConfig.label) + '</span>\n' +
           '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
           '            <span class="price">' + price(specialPriceConfig.value) + '</span>' +
           '        </span>\n' +
@@ -197,74 +143,6 @@ export default {
       } else {
         bind.set_content(template);
       }
-    },
-
-    parseUrl (url) {
-      let newUrl = url;
-      let checkType = false;
-      const adminPath = 'admin'; // in case admin path has changed - edit this constant
-
-      if (url.indexOf(config.images.baseUrlCatalog) !== -1) {
-        const rules = [
-          // match catalog base url or admin url
-          config.images.baseUrlCatalog.replace(/(\/$|$)/, '(?=/)'),
-          // match locale paths
-          '/ru/|/ua/'
-        ];
-
-        // match /index or /key till the EOL if it's admin url
-        if (newUrl.includes(`/${adminPath}/`)) {
-          rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`);
-        }
-
-        newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
-        // remove slashes from start and end
-        newUrl = newUrl.replace(/(^\/+|\/+$)/g, '');
-
-        let y = 0;
-        while (y < reassignedRouter.length) {
-          if (reassignedRouter[y].assigned === newUrl) {
-            newUrl = reassignedRouter[y].reassigned;
-            checkType = true;
-            break;
-          }
-          y = y + 1;
-        }
-      }
-      if (!checkType) {
-        let page = this.getPagesCollection.find(pag => pag.identifier.indexOf(newUrl) !== -1);
-        if (page) {
-          let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
-          newUrl = getPathForStaticPage(pageUrl);
-        } else {
-          let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
-          newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
-          let cat = this.getCategories.find(cat => cat.url_path.indexOf(newUrl) !== -1);
-          if (cat) {
-            newUrl = formatCategoryLink(cat);
-            newUrl = newUrl + params;
-          }
-        }
-      }
-
-      return newUrl;
-    },
-
-    uniqid (a = '', b = false) {
-      let c = Date.now() / 1000;
-      let d = c.toString(16).split('.').join('');
-      while (d.length < 14) {
-        d += '0';
-      }
-      let e = '';
-      if (b) {
-        e = '.';
-        let n = Math.floor(Math.random() * 11);
-        let k = Math.floor(Math.random() * 100000000);
-        let f = String.fromCharCode(n) + k;
-        e += f;
-      }
-      return a + d + e;
     },
 
     attrBackgroundImages (element, className, value, breakpoint = '768px') {
@@ -285,30 +163,8 @@ export default {
       }
     },
 
-    mobileStyles (element, breakpoint = '768px') {
-      let $ = window.$;
-      $.each(element, (key, item) => {
-        let classUniqId = this.uniqid('mobile-style-');
-        let styleNode = document.createElement('style');
-        let wrapper = $(item).find('[data-element="wrapper"]');
-        let dataStyles = '';
-
-        styleNode.type = 'text/css';
-        wrapper.addClass(classUniqId);
-
-        $.each($(item).data(), (key, value) => {
-          if (key.substring(0, 'mobileStyle'.length) === 'mobileStyle') {
-            let styleCamel = key.substring('mobileStyle'.length, key.length);
-            let styleKebab = styleCamel.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-            let unit = isNaN(Number(value)) ? '' : 'px';
-            if (!isNaN(value)) {
-              dataStyles += String(styleKebab + ': ' + value + unit + '!important;');
-            }
-          }
-        });
-        styleNode.innerHTML = '@media only screen and (max-width: ' + breakpoint + ') { .' + classUniqId + ' {' + dataStyles + '} .' + classUniqId + ' .pagebuilder-overlay {min-height: auto !important;}}';
-        wrapper.append(styleNode);
-      });
+    mobileStyles (element, breakpoint) {
+      mobileStyles(element, breakpoint);
     }
   }
 };
