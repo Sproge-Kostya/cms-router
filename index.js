@@ -4,7 +4,7 @@ import i18n from '@vue-storefront/i18n';
 import { unescape } from 'html-escaper';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
 import { price } from '@vue-storefront/core/filters';
-import { checkI18N, mobileStyles, parseUrl, passPicturesThroughApiAndResize } from './helpers';
+import { checkI18N, mobileStyles, parseUrl, passPicturesThroughApiAndResize, uniqId } from './helpers';
 import { localizedRoute } from '@vue-storefront/core/lib/multistore';
 
 export const CmsRouter = {
@@ -27,11 +27,11 @@ export const CmsRouter = {
       parseContent.querySelectorAll('picture source').map(item => {
         const srcset = item.getAttribute('srcset');
         item.setAttribute('srcset', config.images.dotBase64);
-        item.setAttribute('data-srcset', passPicturesThroughApiAndResize(srcset));
+        item.setAttribute('data-srcset', passPicturesThroughApiAndResize(srcset, this.$screen));
       });
       parseContent.querySelectorAll('img').map(item => {
         let src = item.getAttribute('src');
-        item.setAttribute('data-src', passPicturesThroughApiAndResize(src));
+        item.setAttribute('data-src', passPicturesThroughApiAndResize(src, this.$screen));
         item.setAttribute('data-sizes', 'auto');
         item.setAttribute('src', config.images.dotBase64);
         item.setAttribute('loading', 'lazy');
@@ -147,7 +147,7 @@ export const CmsRouter = {
 
     attrBackgroundImages (element, className, value, breakpoint = '768px') {
       if (value) {
-        let classUniqId = this.uniqid(`${className}-`);
+        let classUniqId = uniqId(`${className}-`);
         let styleNode = '';
         element.setAttribute('class', element.getAttribute('class') + ` ${classUniqId}`);
         switch (className) {

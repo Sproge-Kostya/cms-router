@@ -99,7 +99,7 @@ export function mobileStyles (element, breakpoint = '768px') {
   });
 }
 
-export function passPicturesThroughApiAndResize (url) {
+export function passPicturesThroughApiAndResize (url, screen) {
   const uriArray = url.split('?') || [];
   let params = {};
   if (new RegExp(config.images.baseMediaUrl, 'g').test(url)) {
@@ -119,7 +119,7 @@ export function passPicturesThroughApiAndResize (url) {
           url = `${config.images.baseUrl}${params['width']}/${params['height']}/resize${url}`;
         }
       }
-    } else if (this.$screen && this.$screen.width) {
+    } else if (screen && screen.width) {
       url = uriArray[0].replace(new RegExp(config.images.baseMediaUrl, 'g'), '');
       url = `${config.images.baseUrl}${this.$screen.width}/${this.$screen.width}/resize${url}`;
     } else {
