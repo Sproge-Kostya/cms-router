@@ -34,6 +34,7 @@ export const CmsRouter = {
         item.setAttribute('data-src', passPicturesThroughApiAndResize(src, this.$screen));
         item.setAttribute('data-sizes', 'auto');
         item.setAttribute('src', config.images.dotBase64);
+        item.setAttribute('data-lazy', passPicturesThroughApiAndResize(src, this.$screen));
         item.setAttribute('loading', 'lazy');
         const classList = item.getAttribute('class');
         item.setAttribute('class', classList ? classList + ' lazyload' : ' lazyload');
