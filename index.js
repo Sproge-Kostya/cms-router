@@ -9,7 +9,8 @@ import { localizedRoute } from '@vue-storefront/core/lib/multistore';
 
 export const CmsRouter = {
   methods: {
-    parseHTML (parseHTML) {
+    parseHTML (parseHTML, identifier) {
+      const start = new Date().getTime();
       let htmlDecodeContent = htmlDecode(parseHTML);
       let parseContent = parse(htmlDecodeContent);
       parseContent.querySelectorAll('[type="text/x-magento-init"]').map(item => {
@@ -17,7 +18,7 @@ export const CmsRouter = {
       });
       parseContent.querySelectorAll('a').map(item => {
         if (!item.getAttribute('href').startsWith('#')) {
-          item.setAttribute('href', localizedRoute(parseUrl(item.getAttribute('href'))));
+          item.setAttribute('href', parseUrl(item.getAttribute('href')));
         }
         // add rel='noopener'
         if (/(http[s]?:\/\/)/.test(item.getAttribute('href'))) {
@@ -93,6 +94,8 @@ export const CmsRouter = {
           }
         }
       });
+      const end = new Date().getTime();
+      console.log('Time of processing (parseHTML - ' + identifier + ') :' + (end - start) + 'ms');
       return unescapeContent;
     },
 

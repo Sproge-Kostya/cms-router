@@ -1,7 +1,7 @@
 import config from 'config';
 import i18n from '@vue-storefront/i18n';
 import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
-import { currentStoreView } from '@vue-storefront/core/lib/multistore';
+import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
 import rootStore from '@vue-storefront/core/store';
 
 export function uniqId (a = '', b = false) {
@@ -65,6 +65,8 @@ export function parseUrl (url) {
       if (cat) {
         newUrl = formatCategoryLink(cat);
         newUrl = newUrl + params;
+      } else {
+        newUrl = localizedRoute(newUrl);
       }
     }
   }
