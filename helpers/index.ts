@@ -61,7 +61,7 @@ export function parseUrl (url) {
     } else {
       let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
       newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
-      let cat = rootStore.getters['category/getCategories'].find(cat => cat.url_path.indexOf(newUrl) !== -1);
+      let cat = rootStore.getters['category/getCategories'].find(cat => cat.slug === newUrl || cat.url_path === newUrl);
       if (cat) {
         newUrl = formatCategoryLink(cat);
         newUrl = newUrl + params;
@@ -70,7 +70,7 @@ export function parseUrl (url) {
       }
     }
   }
-
+  newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
   return newUrl;
 }
 
