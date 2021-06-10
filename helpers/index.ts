@@ -33,8 +33,12 @@ export function getPathForStaticPage (path: string) {
 
 export function parseUrl (url) {
   let newUrl = url;
-  let checkType = false;
   const adminPath = 'admin'; // in case admin path has changed - edit this constant
+
+  // ignore app links
+  if (/^(mailto:|tel:)/.test(newUrl)) {
+    return newUrl;
+  }
 
   if (url.indexOf(config.images.baseUrlCatalog) !== -1) {
     const rules = [
@@ -53,21 +57,19 @@ export function parseUrl (url) {
     // remove slashes from start and end
     newUrl = newUrl.replace(/(^\/+|\/+$)/g, '');
   }
-  if (!checkType) {
-    let page = rootStore.getters['homepage/getCmsPages'].find(pag => pag.identifier.indexOf(newUrl) !== -1);
-    if (page) {
-      let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
-      newUrl = getPathForStaticPage(pageUrl);
+  let page = rootStore.getters['homepage/getCmsPages'].find(pag => pag.identifier.indexOf(newUrl) !== -1);
+  if (page) {
+    let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
+    newUrl = getPathForStaticPage(pageUrl);
+  } else {
+    let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
+    newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
+    let cat = rootStore.getters['category/getCategories'].find(cat => cat.slug === newUrl || cat.url_path === newUrl);
+    if (cat) {
+      newUrl = formatCategoryLink(cat);
+      newUrl = newUrl + params;
     } else {
-      let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
-      newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
-      let cat = rootStore.getters['category/getCategories'].find(cat => cat.slug === newUrl || cat.url_path === newUrl);
-      if (cat) {
-        newUrl = formatCategoryLink(cat);
-        newUrl = newUrl + params;
-      } else {
-        newUrl = localizedRoute(newUrl);
-      }
+      newUrl = localizedRoute(newUrl);
     }
   }
   newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
