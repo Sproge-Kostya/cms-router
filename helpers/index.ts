@@ -72,7 +72,7 @@ export function parseUrl (url) {
       newUrl = localizedRoute(newUrl);
     }
   }
-  newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
+  newUrl = newUrl.startsWith('/') || new RegExp('^(https://|http://|www.)').test(newUrl) ? newUrl : `/${newUrl}`;
   return newUrl;
 }
 
