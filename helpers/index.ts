@@ -31,6 +31,10 @@ export function getPathForStaticPage (path: string) {
   return isStoreCodeEquals ? `/i${path}` : path
 }
 
+function isUrlAbsolute (url: string): boolean {
+  return new RegExp('^(https://|http://|www.)').test(url);
+}
+
 export function parseUrl (url) {
   let newUrl = url;
   const adminPath = 'admin'; // in case admin path has changed - edit this constant
@@ -69,10 +73,10 @@ export function parseUrl (url) {
       newUrl = formatCategoryLink(cat);
       newUrl = newUrl + params;
     } else {
-      newUrl = localizedRoute(newUrl);
+      newUrl = isUrlAbsolute(newUrl) ? newUrl : localizedRoute(newUrl);
     }
   }
-  newUrl = newUrl.startsWith('/') || new RegExp('^(https://|http://|www.)').test(newUrl) ? newUrl : `/${newUrl}`;
+  newUrl = newUrl.startsWith('/') || isUrlAbsolute(newUrl) ? newUrl : `/${newUrl}`;
   return newUrl;
 }
 
