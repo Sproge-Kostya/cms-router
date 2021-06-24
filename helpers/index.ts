@@ -3,6 +3,9 @@ import i18n from '@vue-storefront/i18n';
 import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
 import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
 import rootStore from '@vue-storefront/core/store';
+import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
+import { parse } from 'node-html-parser';
+import { price } from '@vue-storefront/core/filters';
 
 export function uniqId (a = '', b = false) {
   let c = Date.now() / 1000;
@@ -103,7 +106,7 @@ export function mobileStyles (element, breakpoint = '768px') {
   });
 }
 
-export function passPicturesThroughApiAndResize (url, screen) {
+export function passPicturesThroughApiAndResize (url, screen = { width: '768', height: '768' }) {
   const uriArray = url.split('?') || [];
   let params = {};
   if (new RegExp(config.images.baseMediaUrl, 'g').test(url)) {
@@ -132,4 +135,183 @@ export function passPicturesThroughApiAndResize (url, screen) {
     }
   }
   return url;
+}
+
+export function attrBackgroundImages (element, className, value, breakpoint = '768px') {
+  if (value) {
+    let classUniqId = uniqId(`${className}-`);
+    let styleNode = '';
+    let classList = element.attributes.class ? element.attributes.class + classUniqId : classUniqId;
+    element.setAttribute('class', classList);
+    switch (className) {
+      case 'mobile_image':
+        styleNode = '<style type="text/css"> @media only screen and (max-width: ' + breakpoint + ') { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+        break;
+      case 'desktop_image':
+        styleNode = '<style type="text/css">@media only screen and (min-width: (' + breakpoint + ' + 1)) { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+        break;
+      default:
+    }
+    element.set_content(styleNode);
+  }
+}
+
+export function parsePrice (wrap, json) {
+  let loop = (item, key, array = []) => {
+    if (Object.keys(item).map(i => String(i) === key).indexOf(true) === -1 && typeof item === 'object') {
+      Object.keys(item).map(i => {
+        loop(item[i], key, array);
+      });
+    } else {
+      if (item[key]) {
+        array.push(item[key]);
+      }
+    }
+    return array;
+  };
+  let bind = wrap.querySelector('span');
+  let template = '';
+  let oldPrice = loop(json, 'old-price');
+  if (oldPrice.length) {
+    let oldPriceConfig = oldPrice[0].config;
+    template += '<span class="old-price">\n' +
+      '    <span class="price-container price-final_price tax weee">\n' +
+      '        <span class="price-label">' + checkI18N(oldPriceConfig.label) + '</span>\n' +
+      '        <span class="price-wrapper" id="' + oldPriceConfig.id + '" data-price-type="' + oldPriceConfig.priceType + '" data-price-amount="' + oldPriceConfig.priceAmount + '">' +
+      '            <span class="price">' + price(oldPriceConfig.value) + '</span>' +
+      '        </span>\n' +
+      '    </span>\n' +
+      '</span>';
+  }
+  let specialPrice = loop(json, 'special-price');
+  if (specialPrice.length) {
+    let specialPriceConfig = specialPrice[0].config;
+    template += '<span class="special-price">\n' +
+      '    <span class="price-container price-final_price tax weee">\n' +
+      '        <span class="price-label">' + checkI18N(specialPriceConfig.label) + '</span>\n' +
+      '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
+      '            <span class="price">' + price(specialPriceConfig.value) + '</span>' +
+      '        </span>\n' +
+      '    </span>\n' +
+      '</span>';
+  }
+  if (specialPrice.length && oldPrice.length) {
+    let percent = Math.round(100 - ((100 / oldPrice[0].config.value) * specialPrice[0].config.value));
+    let percentTemp = '<span class="percent" data-price-type="percent">\n' +
+      '        <span> -' + percent + '%</span>\n' +
+      '    </span>';
+    bind.set_content(percentTemp + template);
+  } else {
+    bind.set_content(template);
+  }
+}
+
+export function preparePrice (parseContent) {
+  return parseContent.querySelectorAll('[type="text/x-magento-init"]').map(item => parsePrice(item.parentNode, JSON.parse(item.rawText)));
+}
+
+export function prepareLinks (parseContent) {
+  return parseContent.querySelectorAll('a').map(item => {
+    const { href, rel } = item.attributes;
+    if (!href.startsWith('#')) {
+      item.setAttribute('href', parseUrl(href));
+    }
+    // add rel='noopener'
+    if (/(http[s]?:\/\/)/.test(href) && !rel) {
+      item.setAttribute('rel', 'noopener');
+    }
+  });
+}
+
+export function prepareImages (parseContent, screen = { width: '768', height: '768' }) {
+  parseContent.querySelectorAll('picture source').map(item => {
+    const { srcset } = item.attributes;
+    item.setAttribute('srcset', config.images.dotBase64);
+    item.setAttribute('data-srcset', passPicturesThroughApiAndResize(srcset, screen));
+  });
+  parseContent.querySelectorAll('img').map(item => {
+    const classList = item.attributes.class ? item.attributes.class + ' lazyload' : 'lazyload';
+    const { src, alt } = item.attributes;
+    const imgPath = passPicturesThroughApiAndResize(src, screen);
+    item.setAttribute('data-src', imgPath);
+    item.setAttribute('data-sizes', 'auto');
+    item.setAttribute('src', config.images.dotBase64);
+    item.setAttribute('data-lazy', imgPath);
+    item.setAttribute('loading', 'lazy');
+    item.setAttribute('class', classList);
+    if (!alt) {
+      item.setAttribute('alt', config.seo.defaultTitle);
+    }
+  });
+  parseContent.querySelectorAll('.pagebuilder-banner-wrapper').map(item => {
+    if (item['rawAttrs']) {
+      let regex = new RegExp('(\\w+)=(?:"([^"]*)"|(\\S*))', 'g');
+      let replaceAttrs = item['rawAttrs'].replace(new RegExp(/\\/, 'g'), '').replace(new RegExp('"', 'g'), '\'').replace(new RegExp('=\'', 'g'), '="').replace(new RegExp('\' ', 'g'), '" ').replace(/(\s+)?.$/, '"');
+      let obj = {};
+      let m;
+      while ((m = regex.exec(replaceAttrs)) !== null) {
+        if (m[2]) {
+          obj[m[1]] = m[2];
+        } else {
+          obj[m[1]] = m[3];
+        }
+      }
+      if (obj['images']) {
+        item.setAttribute('data-background-images', String(obj['images']));
+      }
+
+      let jsonAttr = String(obj['images']).replace(new RegExp("'", 'g'), '"');
+      const attr = ['mobile_image', 'desktop_image'];
+      attr.map(key => {
+        attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
+      });
+    }
+  });
+  return parseContent;
+}
+
+export function prepareForm (parseContent) {
+  return parseContent.querySelectorAll('form').map(item => {
+    item.removeAttribute('action');
+    item.removeAttribute('method');
+    item.querySelectorAll('[type=submit]').map(button => {
+      button.setAttribute('class', 'sf-button sf-button--full-width form__action-button--secondary');
+    })
+  });
+}
+
+export function parseHTML (HTML, identifier, screen = { width: '768', height: '768' }) {
+  const start = new Date().getTime();
+  let htmlDecodeContent = htmlDecode(HTML);
+  let parseContent = parse(htmlDecodeContent);
+  // init price render
+  preparePrice(parseContent);
+  // parse all links
+  prepareLinks(parseContent);
+  // parse all images
+  prepareImages(parseContent, screen);
+  // parse all form
+  prepareForm(parseContent);
+
+  // @ts-ignore
+  let unescapeContent = unescape(parseContent);
+  parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
+    if (selector.structuredText) {
+      if (checkI18N(selector.structuredText.trim(), true)) {
+        let regex = new RegExp(selector.structuredText.trim(), 'g');
+        unescapeContent = unescapeContent.replace(regex, checkI18N(selector.structuredText.trim()));
+      }
+    }
+  });
+  parseContent.structuredText.split('\n').map(item => {
+    if (item) {
+      if (checkI18N(item.trim(), true)) {
+        let regex = new RegExp(item.trim(), 'g');
+        unescapeContent = unescapeContent.replace(regex, checkI18N(item.trim()));
+      }
+    }
+  });
+  const end = new Date().getTime();
+  console.log('Time of processing (parseHTML - ' + identifier + ') : ' + (end - start) + 'ms');
+  return unescapeContent;
 }
