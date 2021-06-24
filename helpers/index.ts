@@ -1,11 +1,12 @@
 import config from 'config';
 import i18n from '@vue-storefront/i18n';
-import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
-import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
-import rootStore from '@vue-storefront/core/store';
+import { unescape } from 'html-escaper';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
-import { parse } from 'node-html-parser';
 import { price } from '@vue-storefront/core/filters';
+import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
+import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
+import rootStore from '@vue-storefront/core/store';
+const HTMLParser = require('node-html-parser');
 
 export function uniqId (a = '', b = false) {
   let c = Date.now() / 1000;
@@ -282,8 +283,7 @@ export function prepareForm (parseContent) {
 
 export function parseHTML (HTML, identifier, screen = { width: '768', height: '768' }) {
   const start = new Date().getTime();
-  let htmlDecodeContent = htmlDecode(HTML);
-  let parseContent = parse(htmlDecodeContent);
+  let parseContent = HTMLParser.parse(htmlDecode(HTML));
   // init price render
   preparePrice(parseContent);
   // parse all links
@@ -293,7 +293,6 @@ export function parseHTML (HTML, identifier, screen = { width: '768', height: '7
   // parse all form
   prepareForm(parseContent);
 
-  // @ts-ignore
   let unescapeContent = unescape(parseContent);
   parseContent.querySelectorAll('span, p, a, li, strong').map(selector => {
     if (selector.structuredText) {
