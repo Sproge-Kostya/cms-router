@@ -61,6 +61,9 @@ export function parseUrl (url) {
     // remove slashes from start and end
     newUrl = newUrl.replace(/(^\/+|\/+$)/g, '');
   }
+  if (new RegExp('^(https://|http://|www.)').test(newUrl)) {
+    return newUrl
+  }
   let page = rootStore.getters['homepage/getCmsPages'].find(pag => pag.identifier.indexOf(newUrl) !== -1);
   if (page) {
     let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
@@ -76,7 +79,7 @@ export function parseUrl (url) {
       newUrl = localizedRoute(newUrl);
     }
   }
-  newUrl = newUrl.startsWith('/') || new RegExp('^(https://|http://|www.)').test(newUrl) ? newUrl : `/${newUrl}`;
+  newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
   return newUrl;
 }
 
