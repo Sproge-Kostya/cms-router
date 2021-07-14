@@ -44,8 +44,10 @@ export function parseUrl (url) {
     return newUrl;
   }
 
-  if (url.indexOf(config.images.baseUrlCatalog) !== -1) {
+  if (url.indexOf(config.images.baseUrlCatalog) !== -1 || url.indexOf(config.images.baseUrlAdmin) !== -1) {
     const rules = [
+      // match catalog base url or admin url
+      config.images.baseUrlAdmin.replace(/(\/$|$)/, '(?=/)'),
       // match catalog base url or admin url
       config.images.baseUrlCatalog.replace(/(\/$|$)/, '(?=/)'),
       // match locale paths
