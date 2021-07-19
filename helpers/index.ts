@@ -69,7 +69,7 @@ export function parseUrl (url) {
   let page = rootStore.getters['homepage/getCmsPages'].find(pag => pag.identifier.indexOf(newUrl) !== -1);
   if (page) {
     let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
-    newUrl = getPathForStaticPage(pageUrl);
+    newUrl = localizedRoute(getPathForStaticPage(pageUrl));
   } else {
     let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
     newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
@@ -151,10 +151,10 @@ export function attrBackgroundImages (element, className, value, breakpoint = '7
     element.setAttribute('class', classList);
     switch (className) {
       case 'mobile_image':
-        styleNode = '<style type="text/css"> @media only screen and (max-width: ' + breakpoint + ') { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+        styleNode = '<style> @media only screen and (max-width: ' + breakpoint + ') { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
         break;
       case 'desktop_image':
-        styleNode = '<style type="text/css">@media only screen and (min-width: (' + breakpoint + ' + 1)) { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
+        styleNode = '<style>@media only screen and (min-width: (' + breakpoint + ' + 1)) { .' + classUniqId + ' { background-image: url(' + value + ')}}</style>';
         break;
       default:
     }
