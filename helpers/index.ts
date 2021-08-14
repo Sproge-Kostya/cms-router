@@ -229,6 +229,24 @@ export function prepareLinks (parseContent) {
   });
 }
 
+export function prepareLabels (parseContent) {
+  return parseContent.querySelectorAll('.product-item-photo').map(item => {
+    let templateLeft = '';
+    let templateRight = '';
+    item.querySelectorAll('.amasty-label-container').map(label => {
+      const dataMageInit = label.getAttribute('data-mage-init');
+      const init = JSON.parse(dataMageInit);
+      const initJson = init[Object.keys(init)[0]];
+      if (initJson.config.position.search('left') !== -1) {
+        templateLeft += label.toString();
+      } else {
+        templateRight += label.toString();
+      }
+    });
+    item.appendChild(`<div class="product-labels-container"><div class="wrapper-left">${templateLeft}</div><div class="wrapper-right">${templateRight}</div></div>`);
+  });
+}
+
 export function prepareImages (parseContent, screen = { width: '768', height: '768' }) {
   parseContent.querySelectorAll('picture source').map(item => {
     const { srcset } = item.attributes;
@@ -293,6 +311,8 @@ export function parseHTML (HTML, identifier, screen = { width: '768', height: '7
   preparePrice(parseContent);
   // parse all links
   prepareLinks(parseContent);
+  // parse all labels
+  prepareLabels(parseContent);
   // parse all images
   prepareImages(parseContent, screen);
   // parse all form
