@@ -44,8 +44,8 @@ export function getProducts(parseContent) {
     if (sku) {
       item.querySelectorAll('a').map(link => {
         let slug = removeStoreCodeFromRoute(parseUrl(link.getAttribute('href')));
-        slug = String(slug).replace('.html', '')
-        link.setAttribute('href', localizedRoute(`/p/${sku}${slug}`));
+        slug = String(slug).replace('.html', '');
+        link.setAttribute('href', `/p/${sku}${slug}`);
       })
     }
   });
