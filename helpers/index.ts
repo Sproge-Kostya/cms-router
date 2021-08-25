@@ -45,6 +45,7 @@ export function getProducts(parseContent) {
       item.querySelectorAll('a').map(link => {
         let slug = removeStoreCodeFromRoute(parseUrl(link.getAttribute('href')));
         slug = String(slug).replace('.html', '');
+        slug = slug.startsWith('/') ? slug : `/${slug}`;
         link.setAttribute('href', `/p/${sku}${slug}`);
       })
     }
