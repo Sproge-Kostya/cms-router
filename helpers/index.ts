@@ -3,7 +3,7 @@ import i18n from '@vue-storefront/i18n';
 import { unescape } from 'html-escaper';
 import { htmlDecode } from '@vue-storefront/core/filters/html-decode';
 import { price } from '@vue-storefront/core/filters';
-import { currentStoreView, localizedRoute } from '@vue-storefront/core/lib/multistore';
+import { currentStoreView, localizedRoute, removeStoreCodeFromRoute } from '@vue-storefront/core/lib/multistore';
 import { formatCategoryLink } from '@vue-storefront/core/modules/url/helpers';
 import rootStore from '@vue-storefront/core/store';
 const HTMLParser = require('node-html-parser');
@@ -33,6 +33,22 @@ export function getPathForStaticPage (path: string) {
   const { storeCode } = currentStoreView()
   const isStoreCodeEquals = storeCode === config.defaultStoreCode
   return isStoreCodeEquals ? `/i${path}` : path
+}
+
+export function getProducts(parseContent) {
+  parseContent.querySelectorAll('.product-item-info').map(item => {
+    let sku = '';
+    item.querySelectorAll('[data-role="tocart-form"]').map(form => {
+      sku += form.getAttribute('data-product-sku');
+    });
+    if (sku) {
+      item.querySelectorAll('a').map(link => {
+        let slug = removeStoreCodeFromRoute(parseUrl(link.getAttribute('href')));
+        slug = String(slug).replace('.html', '')
+        link.setAttribute('href', localizedRoute(`/p/${sku}${slug}`));
+      })
+    }
+  });
 }
 
 export function parseUrl (url) {
@@ -307,6 +323,7 @@ export function prepareForm (parseContent) {
 export function parseHTML (HTML, identifier, screen = { width: '768', height: '768' }) {
   const start = new Date().getTime();
   let parseContent = HTMLParser.parse(htmlDecode(HTML));
+  getProducts(parseContent);
   // init price render
   preparePrice(parseContent);
   // parse all links
