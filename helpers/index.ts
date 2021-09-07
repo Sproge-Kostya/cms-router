@@ -90,7 +90,9 @@ export function parseUrl (url) {
   } else {
     let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
     newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
-    let cat = rootStore.getters['category/getCategories'].find(cat => cat.slug === newUrl || cat.url_path === newUrl);
+    let cat = rootStore.getters['category/getCategories'].find(cat => {
+      return cat.slug === newUrl || String(cat.url_path).indexOf(newUrl) !== -1 || String(cat.url_key).indexOf(newUrl) !== -1
+    });
     if (cat) {
       newUrl = formatCategoryLink(cat);
       newUrl = newUrl + params;
@@ -164,7 +166,7 @@ export function attrBackgroundImages (element, className, value, breakpoint = '7
   if (value) {
     let classUniqId = uniqId(`${className}-`);
     let styleNode = '';
-    let classList = element.attributes.class ? element.attributes.class + classUniqId : classUniqId;
+    let classList = element.attributes.class ? element.attributes.class + ' ' + classUniqId : classUniqId;
     element.setAttribute('class', classList);
     switch (className) {
       case 'mobile_image':
