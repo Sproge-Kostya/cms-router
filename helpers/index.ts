@@ -253,12 +253,14 @@ export function prepareLabels (parseContent) {
     let templateRight = '';
     item.querySelectorAll('.amasty-label-container').map(label => {
       const dataMageInit = label.getAttribute('data-mage-init');
-      const init = JSON.parse(dataMageInit);
-      const initJson = init[Object.keys(init)[0]];
-      if (initJson.config.position.search('left') !== -1) {
-        templateLeft += label.toString();
-      } else {
-        templateRight += label.toString();
+      if (dataMageInit) {
+        const init = JSON.parse(dataMageInit);
+        const initJson = init[Object.keys(init)[0]];
+        if (initJson.config.position.search('left') !== -1) {
+          templateLeft += label.toString();
+        } else {
+          templateRight += label.toString();
+        }
       }
     });
     item.appendChild(`<div class="product-labels-container"><div class="wrapper-left">${templateLeft}</div><div class="wrapper-right">${templateRight}</div></div>`);
@@ -305,7 +307,10 @@ export function prepareImages (parseContent, screen = { width: '768', height: '7
       let jsonAttr = String(obj['images']).replace(new RegExp("'", 'g'), '"');
       const attr = ['mobile_image', 'desktop_image'];
       attr.map(key => {
-        attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
+        console.log(key);
+        if (key) {
+          // attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
+        }
       });
     }
   });
