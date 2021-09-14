@@ -55,7 +55,7 @@ export function getProducts(parseContent) {
 export function parseUrl (url) {
   let newUrl = url;
   const adminPath = 'admin'; // in case admin path has changed - edit this constant
-
+  let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
   // ignore app links
   if (/^(mailto:|tel:)/.test(newUrl)) {
     return newUrl;
@@ -88,7 +88,6 @@ export function parseUrl (url) {
     let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
     newUrl = localizedRoute(getPathForStaticPage(pageUrl));
   } else {
-    let params = newUrl.indexOf('?') !== -1 ? `?${newUrl.split('?')[1]}` : '';
     newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
     let cat = rootStore.getters['category/getCategories'].find(cat => {
       return cat.slug === newUrl || String(cat.url_path).indexOf(newUrl) !== -1 || String(cat.url_key).indexOf(newUrl) !== -1
