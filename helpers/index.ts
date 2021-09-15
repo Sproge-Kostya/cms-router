@@ -307,10 +307,7 @@ export function prepareImages (parseContent, screen = { width: '768', height: '7
       let jsonAttr = String(obj['images']).replace(new RegExp("'", 'g'), '"');
       const attr = ['mobile_image', 'desktop_image'];
       attr.map(key => {
-        console.log(key);
-        if (key) {
-          // attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
-        }
+        attrBackgroundImages(item, key, JSON.parse(jsonAttr)[key]);
       });
     }
   });
