@@ -91,7 +91,7 @@ export function parseUrl (url) {
   } else {
     newUrl = newUrl.indexOf('?') !== -1 ? newUrl.split('?')[0] : newUrl;
     let cat = rootStore.getters['category/getCategories'].find(cat => {
-      return cat.slug === newUrl || String(cat.url_path).indexOf(newUrl) !== -1 || String(cat.url_key).indexOf(newUrl) !== -1
+      return cat.slug === newUrl || String(cat.url_path) === newUrl
     });
     if (cat) {
       newUrl = formatCategoryLink(cat);
