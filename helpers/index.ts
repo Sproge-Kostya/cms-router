@@ -79,7 +79,7 @@ export function parseUrl (url) {
     newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
   }
   // remove slashes from start and end
-  newUrl = newUrl.replace(/(^\/+|\/+$)/gm, '');
+  newUrl = newUrl.replace(/(^\/+|\/+$)/gm, '').trim();
 
   if (new RegExp('^(https://|http://|www.)').test(newUrl)) {
     return newUrl
