@@ -35,7 +35,7 @@ export function getPathForStaticPage (path: string) {
   return isStoreCodeEquals ? `/i${path}` : path
 }
 
-export function getProducts(parseContent) {
+export function getProducts (parseContent) {
   parseContent.querySelectorAll('.product-item-info').map(item => {
     let sku = '';
     item.querySelectorAll('[data-role="tocart-form"]').map(form => {
@@ -79,7 +79,7 @@ export function parseUrl (url) {
     newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
   }
   // remove slashes from start and end
-  newUrl = newUrl.replace(/(^\/+|\/+$)/gm, '').trim();
+  newUrl = removeStoreCodeFromRoute(newUrl.replace(/(^\/+|\/+$)/gm, '').trim());
 
   if (new RegExp('^(https://|http://|www.)').test(newUrl)) {
     return newUrl
