@@ -97,7 +97,13 @@ export function parseUrl (url) {
       newUrl = formatCategoryLink(cat);
       newUrl = newUrl + params;
     } else {
-      newUrl = localizedRoute(newUrl);
+      let pathFromBlog = newUrl.replace('.html', '')
+      let post = rootStore.getters['themePosts/getPosts'].find(pag => pag.url_key.indexOf(pathFromBlog) !== -1);
+      if (post) {
+        newUrl = localizedRoute('/news/' + post.url_key)
+      } else {
+        newUrl = localizedRoute(newUrl);
+      }
     }
   }
   newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
