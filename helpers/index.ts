@@ -97,8 +97,7 @@ export function parseUrl (url) {
       newUrl = formatCategoryLink(cat);
       newUrl = newUrl + params;
     } else {
-      let pathFromBlog = newUrl.replace('.html', '')
-      let post = rootStore.getters['themePosts/getPosts'].find(pag => pag.url_key.indexOf(pathFromBlog) !== -1);
+      let post = rootStore.getters['themePosts/getPosts'].find(pag => pag.url_key === newUrl.replace('.html', ''));
       if (post) {
         newUrl = localizedRoute('/news/' + post.url_key)
       } else {
@@ -215,19 +214,28 @@ export function parsePrice (wrap, json) {
       '</span>';
   }
   let specialPrice = loop(json, 'special-price');
+  const getPriceWithDiscount = (price, discount = 0) => {
+    let sumDiscount = (Number(price.value) / 100) * Number(discount);
+    return Number(price.value) - sumDiscount
+  };
+  let loyaltyCart = rootStore.getters['themeCustomer/getLoyaltyCart'];
+  let personalDiscount = 0;
+  if (loyaltyCart) {
+    personalDiscount = loyaltyCart.discount;
+  }
   if (specialPrice.length) {
     let specialPriceConfig = specialPrice[0].config;
     template += '<span class="special-price">\n' +
       '    <span class="price-container price-final_price tax weee">\n' +
       '        <span class="price-label">' + checkI18N(specialPriceConfig.label) + '</span>\n' +
       '        <span class="price-wrapper" id="' + specialPriceConfig.id + '" data-price-type="' + specialPriceConfig.priceType + '" data-price-amount="' + specialPriceConfig.priceAmount + '">' +
-      '            <span class="price">' + price(specialPriceConfig.value) + '</span>' +
+      '            <span class="price">' + price(getPriceWithDiscount(specialPriceConfig, personalDiscount)) + '</span>' +
       '        </span>\n' +
       '    </span>\n' +
       '</span>';
   }
   if (specialPrice.length && oldPrice.length) {
-    let percent = Math.round(100 - ((100 / oldPrice[0].config.value) * specialPrice[0].config.value));
+    let percent = Math.round(100 - ((100 / oldPrice[0].config.value) * getPriceWithDiscount(specialPrice[0].config, personalDiscount)));
     let percentTemp = '<span class="percent" data-price-type="percent">\n' +
       '        <span> -' + percent + '%</span>\n' +
       '    </span>';
