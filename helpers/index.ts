@@ -61,29 +61,28 @@ export function parseUrl (url) {
     return newUrl;
   }
 
-  if (url.indexOf(config.images.baseUrlCatalog) !== -1 || url.indexOf(config.images.baseUrlAdmin) !== -1) {
-    const rules = [
-      // match catalog base url or admin url
-      config.images.baseUrlAdmin.replace(/(\/$|$)/, '(?=/)'),
-      // match catalog base url or admin url
-      config.images.baseUrlCatalog.replace(/(\/$|$)/, '(?=/)'),
-      // match locale paths
-      '/ru/|/ua/'
-    ];
+  const rules = [
+    // match catalog base url or admin url
+    config.images.baseUrlAdmin.replace(/(\/$|$)/, '(?=/)'),
+    // match catalog base url or admin url
+    config.images.baseUrlCatalog.replace(/(\/$|$)/, '(?=/)'),
+    // match locale paths
+    '/ru/|ru/|/ua/|ua/'
+  ];
 
-    // match /index or /key till the EOL if it's admin url
-    if (newUrl.includes(`/${adminPath}/`)) {
-      rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`);
-    }
-
-    newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
+  // match /index or /key till the EOL if it's admin url
+  if (newUrl.includes(`/${adminPath}/`)) {
+    rules.push(`/${adminPath}|(/index(?=/).*$|/key(?=/).*$)`);
   }
+
+  newUrl = url.replace(new RegExp(`(${rules.join('|')})`, 'g'), '');
   // remove slashes from start and end
   newUrl = removeStoreCodeFromRoute(newUrl.replace(/(^\/+|\/+$)/gm, '').trim());
 
   if (new RegExp('^(https://|http://|www.)').test(newUrl)) {
     return newUrl
   }
+
   let page = rootStore.getters['homepage/getCmsPages'].find(pag => pag.identifier.indexOf(newUrl) !== -1);
   if (page) {
     let pageUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
