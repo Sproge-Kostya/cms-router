@@ -253,6 +253,7 @@ export function prepareLinks (parseContent) {
     const { href, rel } = item.attributes;
     if (!href.startsWith('#')) {
       item.setAttribute('href', parseUrl(href));
+      item.setAttribute('data-not-internal-link', 'true');
     }
     // add rel='noopener'
     if (/(http[s]?:\/\/)/.test(href) && !rel) {
