@@ -115,7 +115,6 @@ export function mobileStyles (element, breakpoint = '768px') {
     let styleNode = document.createElement('style');
     let wrapper = item.querySelectorAll('[data-element="wrapper"]');
     let dataStyles = '';
-    styleNode.type = 'text/css';
     wrapper[0].classList.add(classUniqId);
     Object.entries(item.dataset).map(item => {
       if (item[0].substring(0, 'mobileStyle'.length) === 'mobileStyle') {
@@ -234,8 +233,9 @@ export function parsePrice (wrap, json) {
       '</span>';
   }
   if (specialPrice.length && oldPrice.length) {
+    let discountClass = `${Object.keys(loop(json, 'components')[0])[0]}-percent`;
     let percent = Math.round(100 - ((100 / oldPrice[0].config.value) * getPriceWithDiscount(specialPrice[0].config, personalDiscount)));
-    let percentTemp = '<span class="percent" data-price-type="percent">\n' +
+    let percentTemp = '<span class="percent ' + discountClass + '" data-price-type="percent">\n' +
       '        <span> -' + percent + '%</span>\n' +
       '    </span>';
     bind.set_content(percentTemp + template);
@@ -350,7 +350,7 @@ export function parseHTML (HTML, identifier, screen = { width: '768', height: '7
   // parse all labels
   prepareLabels(parseContent);
   // parse all images
-  prepareImages(parseContent, screen);
+  // prepareImages(parseContent, screen);
   // parse all form
   prepareForm(parseContent);
 
