@@ -35,23 +35,6 @@ export function getPathForStaticPage (path: string) {
   return isStoreCodeEquals ? `/i${path}` : path
 }
 
-export function getProducts (parseContent) {
-  parseContent.querySelectorAll('.product-item-info').map(item => {
-    let sku = '';
-    item.querySelectorAll('[data-role="tocart-form"]').map(form => {
-      sku += form.getAttribute('data-product-sku');
-    });
-    if (sku) {
-      item.querySelectorAll('a').map(link => {
-        let slug = removeStoreCodeFromRoute(parseUrl(link.getAttribute('href')));
-        slug = String(slug).replace('.html', '');
-        slug = slug.startsWith('/') ? slug : `/${slug}`;
-        link.setAttribute('href', `/p/${sku}${slug}`);
-      })
-    }
-  });
-}
-
 export function parseUrl (url) {
   let newUrl = url;
   const adminPath = 'admin'; // in case admin path has changed - edit this constant
@@ -106,6 +89,23 @@ export function parseUrl (url) {
   }
   newUrl = newUrl.startsWith('/') ? newUrl : `/${newUrl}`;
   return newUrl;
+}
+
+export function getProducts (parseContent) {
+  parseContent.querySelectorAll('.product-item-info').map(item => {
+    let sku = '';
+    item.querySelectorAll('[data-role="tocart-form"]').map(form => {
+      sku += form.getAttribute('data-product-sku');
+    });
+    if (sku) {
+      item.querySelectorAll('a').map(link => {
+        let slug = removeStoreCodeFromRoute(parseUrl(link.getAttribute('href')));
+        slug = String(slug).replace('.html', '');
+        slug = slug.startsWith('/') ? slug : `/${slug}`;
+        link.setAttribute('href', `/p/${sku}${slug}`);
+      })
+    }
+  });
 }
 
 export function mobileStyles (element, breakpoint = '768px') {
